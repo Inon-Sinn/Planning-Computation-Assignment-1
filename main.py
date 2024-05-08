@@ -1,16 +1,51 @@
-# This is a sample Python script.
+class liquidPuzzle:
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+    correctInput = False
+
+    def __init__(self, str):
+        self.puzzle = self.constructPuzzle(str)
+        self.testCorrectness()
+
+    # test if the puzzle is Standing by the game rules
+    def testCorrectness(self):
+        self.correctInput = True
+
+    # Constructs the puzzle given be the user and returns it
+    def constructPuzzle(self, str):
+        return []
+
+    # setting functions
+    def setTubes(self, tubes):
+        self.tubes = tubes
+
+    def setColor(self, Color):
+        self.color = Color
+
+    # getter functions
+    def getTubes(self):
+        return self.tubes
+
+    def getColor(self):
+        return self.color
+
+    def getPuzzle(self):
+        return self.puzzle
+
+    def getCorrectness(self):
+        return self.correctInput
+
+# A function that just is the interface the user will interact with
+def userInterface():
+    correctInput = False
+    while not correctInput:
+        str_in = input("Please enter the Liquid Puzzle: ")
+        puzzle = liquidPuzzle(str_in)
+        if not puzzle.getCorrectness():
+            print("The Input does not stand by the rules of the Game")
+        else:
+            correctInput = True
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
+# Just the main function, if you dont know this we have other problems
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    userInterface()
