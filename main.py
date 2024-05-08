@@ -3,11 +3,42 @@ class liquidPuzzle:
 
     def __init__(self, str):
         self.puzzle = self.constructPuzzle(str)
-        self.testCorrectness()
+        self.correctInput = self.testCorrectness()
 
     # test if the puzzle is Standing by the game rules
     def testCorrectness(self):
-        self.correctInput = True
+        puzzle = self.getPuzzle()
+
+        # Find the length of the biggest tube and the  highest color
+        maxTube = 0
+        maxColor = 0
+        for arr in puzzle:
+            length = len(arr)
+            if maxTube < length:
+                maxTube = length
+            for j in arr:
+                if j > maxColor:
+                    maxColor = j
+
+        # Check Tubes are of the max size or 0
+        for i in puzzle:
+            length = len(i)
+            if length != maxTube and length != 0:
+                return False
+
+        # Check the amount of colors in the puzzle is correct
+        # a small test so we don't waste space and runtime
+        if maxColor > len(puzzle)*maxTube:
+            return False
+        # Check if each color has the correct amount in the puzzle
+        counterList = [0]*maxColor
+        for arr in puzzle:
+            for j in arr:
+                counterList[j-1] = counterList[j-1] + 1
+        for i in counterList:
+            if i != maxTube:
+                return False
+        return True
 
     # Constructs the puzzle given be the user and returns it
     # Currently only works on correct input
