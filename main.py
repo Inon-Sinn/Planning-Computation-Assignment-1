@@ -10,7 +10,7 @@ class liquidPuzzle:
         if self.correctInput:
             self.tubes = len(self.getPuzzle())
 
-    # test if the puzzle is Standing by the game rules
+    # test if the puzzle is Standing by the game rules, returns Boolean
     def constructCorrectness(self):
         puzzle = self.getPuzzle()
 
@@ -49,7 +49,7 @@ class liquidPuzzle:
         return True
 
     # Constructs the puzzle given be the user and returns it
-    # Currently only works on correct input
+    # Currently only works on correct input, returns puzzle
     def constructPuzzle(self, string):
         # Remove all whitespaces in the string for easier processing
         string = string.replace(" ", "")
@@ -90,7 +90,7 @@ class liquidPuzzle:
         return puzzle
 
     # Given a move from the user we first have to check it it is a possible move, this work foe value from 0 to tubes-1
-    # for ease of use later in the heuristic
+    # for ease of use later in the heuristic, returns Boolean
     def moveCorrectness(self, tubeFrom, tubeTo, reverse=False):
 
         # Check the input
@@ -127,13 +127,32 @@ class liquidPuzzle:
                 return False
         return True
 
-    # Move the value from the one tube to the target tube, return True if it worked and false otherwise
+    # Move the value from the one tube to the target tube, return True if it worked and false otherwise, returns Boolean
     def move(self, tubeFrom, tubeTo, reverse=False):
         if not self.moveCorrectness(tubeFrom, tubeTo, reverse):
             return False
         puzzle = self.getPuzzle()
         moveValue = puzzle[tubeFrom].pop(0)
         puzzle[tubeTo].insert(0, moveValue)
+        return True
+
+    # Building a final result using the values given by the, returns Boolean
+    def buildComplete(self, tNum, tSize, colorNum):
+        if colorNum >= tNum:
+            return False
+        if tNum < 0 or tSize < 0 or colorNum < 0:
+            return False
+        self.setTubes(tNum)
+        self.setTubeSize(tSize)
+        self.setColors(colorNum)
+        self.setCorrectness(True)
+        puzzle = []
+        for i in range(tNum):
+            puzzle.append([])
+        for i in range(colorNum):
+            for j in range(tSize):
+                puzzle[i].append(i+1)
+        self.setPuzzle(puzzle)
         return True
 
     # setting functions
@@ -145,6 +164,12 @@ class liquidPuzzle:
 
     def setTubeSize(self, size):
         self.tubeSize = size
+
+    def setPuzzle(self, puzzle):
+        self.puzzle = puzzle
+
+    def setCorrectness(self, bool):
+        self.correctInput = bool
 
     # getter functions
     def getTubes(self):
@@ -172,7 +197,7 @@ class liquidPuzzle:
                 cell = ""
                 leftToFill = self.tubeSize - len(puzzle[j])
                 if len(puzzle[j]) != 0 and i >= leftToFill:
-                    value = puzzle[j][i-leftToFill]
+                    value = puzzle[j][i - leftToFill]
                     cell = " |" + str(value) + " " * (self.digits(self.colors) - self.digits(value)) + "|"
                 else:
                     cell = " |" + " " * self.digits(self.colors) + "|"
@@ -221,7 +246,33 @@ def userInterface():
             print(puzzle)
 
 
+def createRadom():
+    correctInput = False
+    print("Please enter the amount of tubes, size of a tube and amount of colors in the following "
+          "format:\nTubes_Amount Tube_Size Color_Amount")
+
+    # while function that runs until the value given are correct
+    while not correctInput:
+        str_in = input("Enter values:")
+        str_in = str_in.split(" ")
+        tubesAmount, tubeSize, colorAmount = int(str_in[0]), int(str_in[1]), int(str_in[2])
+        # tubesAmount, tubeSize, colorAmount = 4,0,4
+        puzzle = liquidPuzzle("[]")
+        if puzzle.buildComplete(tubesAmount, tubeSize, colorAmount):
+            correctInput = True
+            print(puzzle)
+        else:
+            print("Invalid Input, try Again")
+
+
+
 # Just the main function, if you don't know this we have other problems
 if __name__ == '__main__':
-    userInterface()
+    print("-----------------------------------------------------------------------------------------------------------")
+
+    # Creating a new random solvable puzzle
+    createRadom()
+
+    # Interface to work manually on a puzzle
+    # userInterface()
     example = [[], [1, 4, 3, 1], [1, 4, 3, 4], [2, 2, 4, 3], [1, 2, 3, 2]]
