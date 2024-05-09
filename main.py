@@ -91,7 +91,7 @@ class liquidPuzzle:
 
     # Given a move from the user we first have to check it it is a possible move, this work foe value from 0 to tubes-1
     # for ease of use later in the heuristic
-    def moveCorrectness(self, tubeFrom, tubeTo, reverse = 0):
+    def moveCorrectness(self, tubeFrom, tubeTo, reverse=0):
 
         # Check the input
         if tubeFrom >= self.getTubes() or tubeTo >= self.getTubes():
@@ -118,6 +118,15 @@ class liquidPuzzle:
             tubeFromColor = puzzle[tubeFrom][0]
             if tubeToColor != tubeFromColor:
                 return False
+        return True
+
+    # Move the value from the one tube to the target tube, return True if it worked and false otherwise
+    def move(self, tubeFrom, tubeTo, reverse=0):
+        if not self.moveCorrectness(tubeFrom, tubeTo, reverse):
+            return False
+        puzzle = self.getPuzzle()
+        moveValue = puzzle[tubeFrom].pop(0)
+        puzzle[tubeTo].insert(0, moveValue)
         return True
 
     # setting functions
@@ -154,8 +163,9 @@ class liquidPuzzle:
             row = ""
             for j in range(self.getTubes()):
                 cell = ""
-                if len(puzzle[j]) != 0:
-                    value = puzzle[j][i]
+                leftToFill = self.tubeSize - len(puzzle[j])
+                if len(puzzle[j]) != 0 and i >= leftToFill:
+                    value = puzzle[j][i-leftToFill]
                     cell = " |" + str(value) + " " * (self.digits(self.colors) - self.digits(value)) + "|"
                 else:
                     cell = " |" + " " * self.digits(self.colors) + "|"
@@ -194,9 +204,14 @@ def userInterface():
         move = input("Enter the next move: ")
         move = move.split(" ")
         tubeFrom, tubeTo = int(move[0]), int(move[1])
-        print("(from,to) = (" + str(tubeFrom) + "," + str(tubeTo) + ")")
+        # tubeFrom, tubeTo = 2, 1 # debug
+
         # we take one down as it works for the player, can be changed
         print(puzzle.moveCorrectness(tubeFrom - 1, tubeTo - 1))
+        if not puzzle.move(tubeFrom - 1, tubeTo - 1):
+            print("Invalid Move, try Again")
+        else:
+            print(puzzle)
 
 
 # Just the main function, if you don't know this we have other problems
