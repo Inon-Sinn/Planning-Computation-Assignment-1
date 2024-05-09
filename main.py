@@ -234,6 +234,7 @@ class liquidPuzzle:
 
 # A function that just is the interface the user will interact with
 def userInterface():
+    print("-------------------------------------------------------------------------------------------------------")
     correctInput = False
     puzzle = liquidPuzzle
     while not correctInput:
@@ -248,9 +249,10 @@ def userInterface():
     print(puzzle)
     playing = True
     print("To move a liquid from one tube to another \nEnter both tube numbers in the following format: 'from' 'to' "
-          "example: 1 6\n")
+          "example: 1 6")
     # puzzle.moveCorrectness(4,5) #debug
     while playing:
+        print("-------------------------------------------------------------------------------------------------------")
         move = input("Enter the next move: ")
         move = move.split(" ")
         tubeFrom, tubeTo = int(move[0]), int(move[1])
@@ -264,7 +266,9 @@ def userInterface():
             print(puzzle)
 
 
-def createRadom():
+# Build a random Liquid Puzzle
+def createRandom():
+    print("-------------------------------------------------------------------------------------------------------")
     puzzle = liquidPuzzle("[]")
     correctInput = False
     print("Please enter the amount of tubes, size of a tube and amount of colors in the following "
@@ -288,17 +292,24 @@ def createRadom():
         print("-------------------------------------------------------------------------------------------------------")
         str_in = input("Amount of Random Moves: ")
         counter = int(str_in)
-        puzzle.reverseBuild(counter, counter*5)
+        puzzle.reverseBuild(counter, counter * 5)
         print("\n Result: {}".format(puzzle.getPuzzle()))
+
+
+def menu():
+    print("-----------------------------------------------------------------------------------------------------------")
+    print("Enter 1 for creating a random liquid puzzle and 2 manually solving one:")
+    str_in = input("Enter: ")
+    value = int(str_in)
+    if value == 1:
+        createRandom()
+    else:
+        userInterface()
 
 
 # Just the main function, if you don't know this we have other problems
 if __name__ == '__main__':
-    print("-----------------------------------------------------------------------------------------------------------")
-
-    # Creating a new random solvable puzzle
-    createRadom()
-
-    # Interface to work manually on a puzzle
+    menu()
+    # createRandom()
     # userInterface()
     example = [[], [1, 4, 3, 1], [1, 4, 3, 4], [2, 2, 4, 3], [1, 2, 3, 2]]
