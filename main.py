@@ -91,7 +91,7 @@ class liquidPuzzle:
 
     # Given a move from the user we first have to check it it is a possible move, this work foe value from 0 to tubes-1
     # for ease of use later in the heuristic
-    def moveCorrectness(self, tubeFrom, tubeTo, reverse=0):
+    def moveCorrectness(self, tubeFrom, tubeTo, reverse=False):
 
         # Check the input
         if tubeFrom >= self.getTubes() or tubeTo >= self.getTubes():
@@ -113,15 +113,22 @@ class liquidPuzzle:
             return False
 
         # Check if the uppermost color in the target tube is the same as the color we want to move
-        if len(puzzle[tubeTo]) != 0 and reverse == 0:
+        if len(puzzle[tubeTo]) != 0 and not reverse:
             tubeToColor = puzzle[tubeTo][0]
             tubeFromColor = puzzle[tubeFrom][0]
             if tubeToColor != tubeFromColor:
                 return False
+
+        # When we do a reverse move we can not move a color which has a different color below
+        if reverse and len(puzzle[tubeFrom]) > 1:
+            colorToMove = puzzle[tubeFrom][0]
+            colorBelow = puzzle[tubeFrom][1]
+            if colorToMove != colorBelow:
+                return False
         return True
 
     # Move the value from the one tube to the target tube, return True if it worked and false otherwise
-    def move(self, tubeFrom, tubeTo, reverse=0):
+    def move(self, tubeFrom, tubeTo, reverse=False):
         if not self.moveCorrectness(tubeFrom, tubeTo, reverse):
             return False
         puzzle = self.getPuzzle()
