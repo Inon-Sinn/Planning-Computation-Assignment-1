@@ -1,3 +1,6 @@
+import random
+
+
 class liquidPuzzle:
     correctInput = False
     colors = 0
@@ -151,9 +154,24 @@ class liquidPuzzle:
             puzzle.append([])
         for i in range(colorNum):
             for j in range(tSize):
-                puzzle[i].append(i+1)
+                puzzle[i].append(i + 1)
         self.setPuzzle(puzzle)
         return True
+
+    # Takes a liquidPuzzle and then randomly reverses it, does not return anything
+    def reverseBuild(self, count, limit=100):
+        curlimit = limit
+        while count > 0 and curlimit > 0:
+            randomFrom = random.randint(0, self.getTubes() - 1)
+            randomTo = random.randint(0, self.getTubes() - 1)
+            if self.move(randomFrom, randomTo, reverse=True):
+                count = count - 1
+                curlimit = limit
+                print(self)
+            else:
+                curlimit = curlimit - 1
+        if curlimit == 0:
+            print("Went over the limit, could be final result")
 
     # setting functions
     def setTubes(self, tubes):
@@ -247,23 +265,31 @@ def userInterface():
 
 
 def createRadom():
+    puzzle = liquidPuzzle("[]")
     correctInput = False
     print("Please enter the amount of tubes, size of a tube and amount of colors in the following "
           "format:\nTubes_Amount Tube_Size Color_Amount")
 
-    # while function that runs until the value given are correct
+    # while function that runs until the value given are correct for creating a final result
     while not correctInput:
         str_in = input("Enter values:")
         str_in = str_in.split(" ")
         tubesAmount, tubeSize, colorAmount = int(str_in[0]), int(str_in[1]), int(str_in[2])
         # tubesAmount, tubeSize, colorAmount = 4,0,4
-        puzzle = liquidPuzzle("[]")
         if puzzle.buildComplete(tubesAmount, tubeSize, colorAmount):
             correctInput = True
             print(puzzle)
         else:
             print("Invalid Input, try Again")
 
+    # Makes a random amount of moves arcading to the user
+    print("You can now choose how many reverse moves to make")
+    while True:
+        print("-------------------------------------------------------------------------------------------------------")
+        str_in = input("Amount of Random Moves: ")
+        counter = int(str_in)
+        puzzle.reverseBuild(counter, counter*5)
+        print("\n Result: {}".format(puzzle.getPuzzle()))
 
 
 # Just the main function, if you don't know this we have other problems
