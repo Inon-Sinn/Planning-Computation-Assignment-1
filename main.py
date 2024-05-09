@@ -1,9 +1,14 @@
 class liquidPuzzle:
     correctInput = False
+    colors = 0
+    tubes = 0
+    tubeSize = 0
 
     def __init__(self, str):
         self.puzzle = self.constructPuzzle(str)
         self.correctInput = self.testCorrectness()
+        if self.correctInput:
+            self.tubes = len(self.getPuzzle())
 
     # test if the puzzle is Standing by the game rules
     def testCorrectness(self):
@@ -38,6 +43,9 @@ class liquidPuzzle:
         for i in counterList:
             if i != maxTube:
                 return False
+
+        self.setColors(maxColor)
+        self.setTubeSize(maxTube)
         return True
 
     # Constructs the puzzle given be the user and returns it
@@ -85,15 +93,21 @@ class liquidPuzzle:
     def setTubes(self, tubes):
         self.tubes = tubes
 
-    def setColor(self, Color):
-        self.color = Color
+    def setColors(self, Color):
+        self.colors = Color
+
+    def setTubeSize(self, size):
+        self.tubeSize = size
 
     # getter functions
     def getTubes(self):
         return self.tubes
 
-    def getColor(self):
-        return self.color
+    def getColors(self):
+        return self.colors
+
+    def getTubeSize(self):
+        return self.tubeSize
 
     def getPuzzle(self):
         return self.puzzle
@@ -101,10 +115,38 @@ class liquidPuzzle:
     def getCorrectness(self):
         return self.correctInput
 
+    def __str__(self):
+        result = ""
+        puzzle = self.getPuzzle()
+        for i in range(self.getTubeSize()):
+            row = ""
+            for j in range(self.getTubes()):
+                cell = ""
+                if len(puzzle[j]) != 0:
+                    value = puzzle[j][i]
+                    cell = " |" + str(value) + " " * (self.digits(self.colors) - self.digits(value)) + "|"
+                else:
+                    cell = " |" + " " * self.digits(self.colors) + "|"
+                row = row + cell
+            result = result + "\n" + row
+        #
+        # for arr in self.puzzle:
+        #     row = ""
+        #     for value in arr:
+        #         cell = " | " + str(value) + " "*(self.digits(self.colors)-self.digits(value)) + " |"
+        #         row = row + cell
+        #     result = result + "\n" + row
+        return result
+
+    def digits(self, value):
+        return len(str(value))
+
+
 
 # A function that just is the interface the user will interact with
 def userInterface():
     correctInput = False
+    puzzle = liquidPuzzle
     while not correctInput:
         str_in = input("Please enter the Liquid Puzzle: ")
         puzzle = liquidPuzzle(str_in)
@@ -113,6 +155,10 @@ def userInterface():
         else:
             correctInput = True
     print(puzzle.getPuzzle())
+    print(puzzle.getColors())
+    print(puzzle.getTubes())
+    print(puzzle.getTubeSize())
+    print(puzzle)
 
 
 # Just the main function, if you don't know this we have other problems
