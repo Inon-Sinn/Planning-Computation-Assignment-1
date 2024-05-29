@@ -13,7 +13,7 @@ def construct_puzzle(string):
     return puzzle
 
 
-# An auxiliary function
+# UI, An auxiliary function
 def digits(value):
     return len(str(value))
 
@@ -28,13 +28,17 @@ class LiquidPuzzle:
         self.tube_size = max(len(tube) for tube in self.tubes)
 
     # Checks if the move is valid only work in the correct direction no reverse action
-    def is_valid_move(self, tube_from, tube_to,reverse=False):
+    def is_valid_move(self, tube_from, tube_to, reverse=False):
         if not self.tubes[tube_from]:
             return False
         if len(self.tubes[tube_to]) >= self.tube_size:
             return False
-        if not self.tubes[tube_to] or self.tubes[tube_from][0] == self.tubes[tube_to][0]:
-            return True
+        if not reverse:
+            if not self.tubes[tube_to] or self.tubes[tube_from][0] == self.tubes[tube_to][0]:
+                return True
+        else:
+            if len(self.tubes[tube_from]) > 1 and self.tubes[tube_from][0] == self.tubes[tube_from][1]:
+                return True
         return False
 
     # Checks if the given puzzle is even a correct input
@@ -58,7 +62,7 @@ class LiquidPuzzle:
         return True
 
     # Makes a move if the move is valid else return None, but if it is correct is builds a new liquid puzzle
-    def move(self, tube_from, tube_to,reverse=False):
+    def move(self, tube_from, tube_to, reverse=False):
         if self.is_valid_move(tube_from, tube_to, reverse):
             new_tubes = [list(tube) for tube in self.tubes]
             new_tubes[tube_to].insert(0, new_tubes[tube_from].pop(0))
@@ -76,7 +80,7 @@ class LiquidPuzzle:
                         neighbors.append(neighbor)
         return neighbors
 
-    # Building a final result using the values given by the, returns Boolean
+    # UI, Building a final result using the values given by the, returns Boolean
     def buildComplete(self, tNum, tSize, colorNum):
         if colorNum >= tNum:
             return False
@@ -93,28 +97,30 @@ class LiquidPuzzle:
         self.tubes = puzzle
         return True
 
-    # Takes a liquidPuzzle and then randomly reverses it, does not return anything
-    def reverseBuild(self, count, limit=100):
+    # UI, Takes a liquidPuzzle and then randomly reverses it, does not return anything
+    def reverseBuild(puzzle, count, limit=100):
         cur_limit = limit
         while count > 0 and cur_limit > 0:
-            randomFrom = random.randint(0, len(self.tubes) - 1)
-            randomTo = random.randint(0, len(self.tubes) - 1)
-            if self.move(randomFrom, randomTo, reverse=True):
+            randomFrom = random.randint(0, len(puzzle.tubes) - 1)
+            randomTo = random.randint(0, len(puzzle.tubes) - 1)
+            if puzzle.is_valid_move(randomFrom, randomTo, reverse=True):
+                puzzle = puzzle.move(randomFrom, randomTo, reverse=True)
                 count = count - 1
                 cur_limit = limit
-                print(self)
+                print(puzzle)
             else:
                 cur_limit = cur_limit - 1
         if cur_limit == 0:
             print("Went over the limit, could be final result")
+        return puzzle
 
     @staticmethod
-    # an axilliary method for get_neighbors that helps construct a new puzzle
+    # an Auxiliary method for get_neighbors that helps construct a new puzzle
     def from_puzzle(puzzle):
         puzzle_str = '[' + '],['.join([','.join(map(str, tube)) if tube else '' for tube in puzzle]) + ']'
         return LiquidPuzzle(puzzle_str)
 
-    # an Auxilliary method created for A-star to check if we solved the liquid puzzle
+    # an Auxiliary method created for A-star to check if we solved the liquid puzzle
     def is_goal(self):
         for tube in self.tubes:
             if len(tube) > 0 and (len(set(tube)) > 1 or len(tube) != self.tube_size):
@@ -133,7 +139,7 @@ class LiquidPuzzle:
     def __str__(self):
         return '[' + ']['.join([','.join(map(str, tube)) if tube else '[]' for tube in self.tubes]) + ']'
 
-    # printing the puzzle for the User Interface
+    # UI, printing the puzzle for the User Interface
     def special_print(self):
         result = ""
         puzzle = self.tubes
@@ -278,6 +284,7 @@ def test_a_star():
         print("No solution found.")
 
 
+# UI, Solves an liquid puzzle with our algorithm
 def solve(initial_state):
     # debug
     # initial_state = LiquidPuzzle("[[], [0, 1, 1], [2, 0, 1], [0, 2, 2]]")
@@ -298,9 +305,9 @@ def solve(initial_state):
         print("No solution found.")
 
 
-# Build a random Liquid Puzzle
+# UI, Build a random Liquid Puzzle
 def createRandom():
-    print("-------------------------------------------------------------------------------------------------------")
+    print("-"*30)
     puzzle = LiquidPuzzle("[[]]")
     print("Please enter the amount of tubes, size of a tube and amount of colors in the following "
           "format:\nTubes_Amount Tube_Size Color_Amount")
@@ -308,7 +315,7 @@ def createRandom():
     # while function that runs until the value given are correct for creating a final result
     while True:
         str_in = input("Enter values:")
-        str_in = str_in.split(" ")
+        str_in = str_in.strip().split(" ")
         tubesAmount, tubeSize, colorAmount = int(str_in[0]), int(str_in[1]), int(str_in[2])
         # tubesAmount, tubeSize, colorAmount = 5,4,4
         if puzzle.buildComplete(tubesAmount, tubeSize, colorAmount):
@@ -318,18 +325,22 @@ def createRandom():
             print("Invalid Input, try Again")
 
     # Makes a random amount of moves arcading to the user
-    # print("You can now choose how many reverse moves to make")
-    # while True:
-    #     print("-------------------------------------------------------------------------------------------------------")
-    #     str_in = input("Amount of Random Moves: ")
-    #     counter = int(str_in)
-    #     puzzle.reverseBuild(counter, counter * 5)
-    #     print("\n Result: ")
-    #     puzzle.special_print()
+    print("You can now choose how many reverse moves to make")
+    while True:
+        print("-"*30)
+        str_in = input("Amount of Random Moves, write 0 to exit: ")
+        counter = int(str_in)
+        # counter = 1
+        if counter == 0:
+            break
+        puzzle = puzzle.reverseBuild(counter, counter * 100)
+        print("\n Result: ")
+        puzzle.special_print()
 
 
+# UI, the User interface
 def menu():
-    print("-----------------------------------------------------------------------------------------------------------")
+    print("-"*30)
     print("Enter 1 for solving a liquid puzzle and 2 for creating a random one:")
     str_in = input("Input: ")
     value = int(str_in)
@@ -339,7 +350,13 @@ def menu():
             str_in = input("\nPlease enter the Liquid Puzzle: ")
             try:
                 puzzle = LiquidPuzzle(str_in)
-                solve(puzzle)
+                print("\nEnter 1 for automatic and 2 for manual:")
+                str_in = input("Input: ")
+                value = int(str_in)
+                if value == 1:
+                    solve(puzzle)
+                else:
+                    manuel_solving(puzzle)
                 break
             except ValueError:
                 print("The Input does not stand by the rules of the Game")
@@ -347,9 +364,27 @@ def menu():
         createRandom()
 
 
+# UI, runs the manuel ui for solving a liquid puzzle
+def manuel_solving(puzzle):
+    playing = True
+    print("-"*30)
+    print("To move a liquid from one tube to another \nEnter both tube numbers in the following format: 'from' 'to' "
+          "example: 1 6")
+    puzzle.special_print()
+    # puzzle.moveCorrectness(4,5) #debug
+    while playing:
+        print("-"*30)
+        move = input("Enter the next move, write 0 to exit: ")
+        move = move.split(" ")
+        if int(move[0]) == 0:
+            break
+        tubeFrom, tubeTo = int(move[0]), int(move[1])
+        # tubeFrom, tubeTo = 2, 1 # debug
+        if not puzzle.is_valid_move(tubeFrom - 1, tubeTo - 1):
+            print("Invalid Move, try Again")
+        else:
+            puzzle = puzzle.move(tubeFrom - 1, tubeTo - 1)
+            puzzle.special_print()
+
 if __name__ == '__main__':
-    # UI()
     menu()
-    # createRandom()
-    # initial_state = LiquidPuzzle("[[], [0, 1, 1], [2, 0, 1], [0, 2, 2]]")
-    # print("hi")
