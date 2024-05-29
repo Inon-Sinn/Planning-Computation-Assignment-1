@@ -1,5 +1,6 @@
 from queue import PriorityQueue
 
+
 def construct_puzzle(string):
     string = string.replace(" ", "").replace("[", "").replace("]", " ")
     tubes = string.strip().split(" ")
@@ -10,6 +11,7 @@ def construct_puzzle(string):
         else:
             puzzle.append([])
     return puzzle
+
 
 def construct_correctness(puzzle):
     max_tube = max(len(tube) for tube in puzzle)
@@ -31,6 +33,7 @@ def construct_correctness(puzzle):
             return False
 
     return True
+
 
 class LiquidPuzzle:
     def __init__(self, string):
@@ -88,6 +91,7 @@ class LiquidPuzzle:
     def __str__(self):
         return '[' + ']['.join([','.join(map(str, tube)) if tube else '[]' for tube in self.tubes]) + ']'
 
+
 def heuristic(puzzle):
     misplaced_liquids = 0
     mixed_containers = 0
@@ -97,6 +101,7 @@ def heuristic(puzzle):
         if len(tube) > 0 and len(set(tube)) == 1 and len(tube) != puzzle.tube_size:
             misplaced_liquids += puzzle.tube_size - len(tube)
     return misplaced_liquids + mixed_containers
+
 
 def a_star(initial_state):
     open_set = PriorityQueue()
@@ -127,12 +132,14 @@ def a_star(initial_state):
 
     return None
 
+
 def reconstruct_path(came_from, current):
     total_path = [current]
     while current in came_from:
         current = came_from[current]
         total_path.append(current)
     return total_path[::-1]
+
 
 def test_a_star():
     initial_state = LiquidPuzzle("[[1,2,3],[3,2,1],[2,3,1],[]]")
@@ -142,6 +149,8 @@ def test_a_star():
             print(step)
     else:
         print("No solution found.")
+
+
 def userInterface():
     print("-------------------------------------------------------------------------------------------------------")
     correctInput = False
@@ -173,7 +182,6 @@ def userInterface():
             print("Invalid Move, try Again")
         else:
             print(puzzle)
-
 
 
 # Build a random Liquid Puzzle
@@ -215,7 +223,6 @@ def menu():
         createRandom()
     else:
         userInterface()
-
 
 
 if __name__ == '__main__':
