@@ -20,12 +20,17 @@ def digits(value):
 
 # This class represent the liquid puzzle
 class LiquidPuzzle:
-    def __init__(self, string):
-        self.colors = 0
-        self.tubes = construct_puzzle(string)
-        if not self.construct_correctness():
-            raise ValueError("Invalid puzzle configuration")
-        self.tube_size = max(len(tube) for tube in self.tubes)
+    def __init__(self, string, Moved=False, newTubes=[], colors=0, tube_size=0):
+        if Moved:
+            self.tubes = newTubes
+            self.colors = colors
+            self.tube_size = tube_size
+        else:
+            self.colors = 0
+            self.tubes = construct_puzzle(string)
+            if not self.construct_correctness():
+                raise ValueError("Invalid puzzle configuration")
+            self.tube_size = max(len(tube) for tube in self.tubes)
 
     # Checks if the move is valid only work in the correct direction no reverse action
     def is_valid_move(self, tube_from, tube_to, reverse=False):
@@ -66,7 +71,7 @@ class LiquidPuzzle:
         if self.is_valid_move(tube_from, tube_to, reverse):
             new_tubes = [list(tube) for tube in self.tubes]
             new_tubes[tube_to].insert(0, new_tubes[tube_from].pop(0))
-            return LiquidPuzzle.from_puzzle(new_tubes)
+            return LiquidPuzzle("",True,new_tubes,self.colors,self.tube_size)
         return None
 
     # Finds all the possible moves for the current liquid puzzle
@@ -92,7 +97,7 @@ class LiquidPuzzle:
         for i in range(len(self.tubes)):
             for j in range(len(self.tubes)):
                 neighbor = self.move(i, j)
-                for k in range(1, top_color[i]+1):
+                for k in range(1, top_color[i] + 1):
                     if not neighbor:
                         break
                     if neighbor and i != j:
@@ -490,7 +495,7 @@ def manuel_solving(puzzle):
 
 
 if __name__ == '__main__':
-    initial_state = LiquidPuzzle("[[], [], [6, 5, 7, 6, 0, 2, 1, 0], [5, 0, 2, 2, 2, 3, 3, 1], [4, 6, 1, 7, 1, 6, 6, 4], [0, 4, 4, 7, 3, 6, 2, 5], [1, 1, 5, 0, 5, 4, 7, 1], [6, 3, 3, 3, 7, 3, 7, 5], [4, 1, 7, 5, 0, 4, 4, 0], [7, 5, 3, 0, 2, 2, 2, 6]]")
+    initial_state = LiquidPuzzle("[[1,3,5,4,4,7,6,1],[2,2,0,0,4,3,6,7],[2,1,1,4,5,6,0,2],[0,6,6,5,4,7,7,3],[3,4,1,0,5,7,4,4],[7,6,2,2,3,1,0,0],[7,3,3,1,2,5,5,6],[7,6,5,5,3,2,1,0],[],[]]")
     solve(initial_state)
     # arr = initial_state.get_neighbors()
     # print("hi")
