@@ -165,6 +165,10 @@ class LiquidPuzzle:
 
 # The heuristic function
 def heuristic(puzzle):
+    return heuristic_second(puzzle)
+
+
+def heuristic_first(puzzle):
     tubes = puzzle.tubes
     tube_size = puzzle.tube_size
 
@@ -184,6 +188,27 @@ def heuristic(puzzle):
                 empty_moves += (tube_size - len(tube))
 
     return mixed_tubes + empty_moves
+
+
+def heuristic_second(puzzle):
+    tubes = puzzle.tubes
+    color_count = {}
+
+    result = 0
+    # Calculate the number of different colors on another color in a tube
+    for tube in tubes:
+        for i in range(len(tube)-1):
+            if tube[i] != tube[i+1]:
+                result += 1
+        if tube:
+            if tube[-1] not in color_count:
+                color_count[tube[-1]] = 1
+            else: color_count[tube[-1]] += 1
+
+    # Check the distribution of the lowest color
+    for color, value in color_count.items():
+        result += value - 1
+    return result
 
 
 # A star algorithm
@@ -387,4 +412,8 @@ def manuel_solving(puzzle):
             puzzle.special_print()
 
 if __name__ == '__main__':
-    menu()
+    initial_state = LiquidPuzzle("[[], [], [6, 5, 7, 6, 0, 2, 1, 0], [5, 0, 2, 2, 2, 3, 3, 1], [4, 6, 1, 7, 1, 6, 6, 4], [0, 4, 4, 7, 3, 6, 2, 5], [1, 1, 5, 0, 5, 4, 7, 1], [6, 3, 3, 3, 7, 3, 7, 5], [4, 1, 7, 5, 0, 4, 4, 0], [7, 5, 3, 0, 2, 2, 2, 6]]")
+    solve(initial_state)
+    # print(heuristic(initial_state))
+
+    # menu()
