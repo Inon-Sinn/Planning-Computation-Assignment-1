@@ -71,13 +71,34 @@ class LiquidPuzzle:
 
     # Finds all the possible moves for the current liquid puzzle
     def get_neighbors(self):
+        top_color = {}
+        # top color same counter
+        count = 0
+        for tube in self.tubes:
+            if not tube:
+                top_color[count] = 0
+            else:
+                top = tube[0]
+                streak = 1
+                for i in range(1, len(tube)):
+                    if tube[i] != top:
+                        break
+                    streak += 1
+
+                top_color[count] = streak
+            count += 1
+
         neighbors = []
         for i in range(len(self.tubes)):
             for j in range(len(self.tubes)):
-                if i != j and self.is_valid_move(i, j):
-                    neighbor = self.move(i, j)
-                    if neighbor:
+                neighbor = self.move(i, j)
+                for k in range(1, top_color[i]+1):
+                    if not neighbor:
+                        break
+                    if neighbor and i != j:
                         neighbors.append(neighbor)
+                    neighbor = neighbor.move(i, j)
+
         return neighbors
 
     # UI, Building a final result using the values given by the, returns Boolean
@@ -165,7 +186,7 @@ class LiquidPuzzle:
 
 # The heuristic function
 def heuristic(puzzle):
-    return heuristic_second(puzzle)
+    return heuristic_first(puzzle)
 
 
 def heuristic_first(puzzle):
@@ -197,17 +218,73 @@ def heuristic_second(puzzle):
     result = 0
     # Calculate the number of different colors on another color in a tube
     for tube in tubes:
-        for i in range(len(tube)-1):
-            if tube[i] != tube[i+1]:
+        for i in range(len(tube) - 1):
+            if tube[i] != tube[i + 1]:
                 result += 1
         if tube:
             if tube[-1] not in color_count:
                 color_count[tube[-1]] = 1
-            else: color_count[tube[-1]] += 1
+            else:
+                color_count[tube[-1]] += 1
 
     # Check the distribution of the lowest color
     for color, value in color_count.items():
         result += value - 1
+    return result
+
+
+def heuristic_third(puzzle):
+    tubes = puzzle.tubes
+    tube_size = puzzle.tube_size
+    top_color = {}
+    bottom_color = {}
+
+    # count the top collection of colors including streaks
+    for tube in tubes:
+        if tube:
+            top = tube[0]  # Top color in the tube
+            # Add to dict
+            if top not in top_color:
+                top_color[top] = 1
+            else:
+                top_color[top] += 1
+
+            # Check if there is more of the same underneath
+            for i in range(1, len(tube)):
+                if tube[i] != top:
+                    break
+                else:
+                    top_color[top] += 1
+                    # Check if this whole is once solid color i yes remove the count
+                    if i == len(tube) - 1:
+                        top_color[top] -= len(tube)
+
+    # Get the bottom solid color and the amount
+    count = 0
+    for tube in tubes:
+        if not tube:
+            bottom_color[count] = 0
+        else:
+            bottom = tube[-1]
+            streak = 1
+            for i in range(len(tube) - 2, -1, -1):
+                if tube[i] != bottom:
+                    break
+                streak += 1
+
+            bottom_color[count] = streak
+        count += 1
+
+    # Calculate the value
+    result = 0
+    # Rule 1 - remove top color
+    for color, value in top_color.items():
+        result += 2 ** value
+
+    # Rule 2 - completion is king
+    for color, value in bottom_color.items():
+        result += tube_size - value
+
     return result
 
 
@@ -332,7 +409,7 @@ def solve(initial_state):
 
 # UI, Build a random Liquid Puzzle
 def createRandom():
-    print("-"*30)
+    print("-" * 30)
     puzzle = LiquidPuzzle("[[]]")
     print("Please enter the amount of tubes, size of a tube and amount of colors in the following "
           "format:\nTubes_Amount Tube_Size Color_Amount")
@@ -352,7 +429,7 @@ def createRandom():
     # Makes a random amount of moves arcading to the user
     print("You can now choose how many reverse moves to make")
     while True:
-        print("-"*30)
+        print("-" * 30)
         str_in = input("Amount of Random Moves, write 0 to exit: ")
         counter = int(str_in)
         # counter = 1
@@ -365,7 +442,7 @@ def createRandom():
 
 # UI, the User interface
 def menu():
-    print("-"*30)
+    print("-" * 30)
     print("Enter 1 for solving a liquid puzzle and 2 for creating a random one:")
     str_in = input("Input: ")
     value = int(str_in)
@@ -392,13 +469,13 @@ def menu():
 # UI, runs the manuel ui for solving a liquid puzzle
 def manuel_solving(puzzle):
     playing = True
-    print("-"*30)
+    print("-" * 30)
     print("To move a liquid from one tube to another \nEnter both tube numbers in the following format: 'from' 'to' "
           "example: 1 6")
     puzzle.special_print()
     # puzzle.moveCorrectness(4,5) #debug
     while playing:
-        print("-"*30)
+        print("-" * 30)
         move = input("Enter the next move, write 0 to exit: ")
         move = move.split(" ")
         if int(move[0]) == 0:
@@ -411,9 +488,10 @@ def manuel_solving(puzzle):
             puzzle = puzzle.move(tubeFrom - 1, tubeTo - 1)
             puzzle.special_print()
 
+
 if __name__ == '__main__':
     initial_state = LiquidPuzzle("[[], [], [6, 5, 7, 6, 0, 2, 1, 0], [5, 0, 2, 2, 2, 3, 3, 1], [4, 6, 1, 7, 1, 6, 6, 4], [0, 4, 4, 7, 3, 6, 2, 5], [1, 1, 5, 0, 5, 4, 7, 1], [6, 3, 3, 3, 7, 3, 7, 5], [4, 1, 7, 5, 0, 4, 4, 0], [7, 5, 3, 0, 2, 2, 2, 6]]")
     solve(initial_state)
-    # print(heuristic(initial_state))
-
+    # arr = initial_state.get_neighbors()
+    # print("hi")
     # menu()
