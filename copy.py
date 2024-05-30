@@ -100,7 +100,7 @@ class LiquidPuzzle:
                 for k in range(1, top_color[i] + 1):
                     if not neighbor:
                         break
-                    if neighbor and i != j:
+                    if neighbor and i != j and k == top_color[i]:
                         neighbors.append(neighbor)
                     neighbor = neighbor.move(i, j)
 
@@ -495,7 +495,7 @@ def manuel_solving(puzzle):
 
 
 if __name__ == '__main__':
-    initial_state = LiquidPuzzle("[[1,3,5,4,4,7,6,1],[2,2,0,0,4,3,6,7],[2,1,1,4,5,6,0,2],[0,6,6,5,4,7,7,3],[3,4,1,0,5,7,4,4],[7,6,2,2,3,1,0,0],[7,3,3,1,2,5,5,6],[7,6,5,5,3,2,1,0],[],[]]")
+    initial_state = LiquidPuzzle("[[], [0, 2, 0, 2], [3, 3, 2, 0], [3, 0, 1, 3], [2, 1, 1, 1]]")
     solve(initial_state)
     # arr = initial_state.get_neighbors()
     # print("hi")
