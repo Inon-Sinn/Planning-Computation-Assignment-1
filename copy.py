@@ -302,6 +302,7 @@ def a_star(initial_state):
     f_score = {initial_state: heuristic(initial_state)}
     closed_set = set()
 
+
     while not open_set.empty():
         current = open_set.get()[1]
 
@@ -310,7 +311,8 @@ def a_star(initial_state):
 
         closed_set.add(current)
 
-        for neighbor in current.get_neighbors():
+        neighbors = current.get_neighbors()
+        for neighbor in neighbors:
             if neighbor in closed_set:
                 continue
 
@@ -323,6 +325,49 @@ def a_star(initial_state):
 
     return None
 
+# A star algorithm
+def debug_a_star(initial_state,debug):
+    open_set = PriorityQueue()
+    open_set.put((0, initial_state))
+    came_from = {}
+    g_score = {initial_state: 0}
+    f_score = {initial_state: heuristic(initial_state)}
+    closed_set = set()
+
+    count = 0
+    while not open_set.empty():
+        # debug = open_set.get()
+        # toPrint = debug[0]
+        # current = debug[1]
+        current = open_set.get()[1]
+
+        if count == 2:
+            print(f"First Step: score {f_score[current]} - {current}")
+            print("-"*30)
+
+        #debug
+        if current in debug:
+            print(f"{count}:F Score {f_score[current]}, step number {debug[current]} - {current}")
+
+        if current.is_goal():
+            return reconstruct_path(came_from, current)
+
+        closed_set.add(current)
+
+        neighbors = current.get_neighbors()
+        for neighbor in neighbors:
+            if neighbor in closed_set:
+                continue
+
+            tentative_g_score = g_score[current] + 1
+            if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                came_from[neighbor] = current
+                g_score[neighbor] = tentative_g_score
+                f_score[neighbor] = g_score[neighbor] + heuristic(neighbor)
+                open_set.put((f_score[neighbor], neighbor))
+
+        count += 1
+    return None
 
 # Reconstructs the path found with A star
 def reconstruct_path(came_from, current):
@@ -395,6 +440,7 @@ def test_a_star():
 def solve(initial_state):
     # debug
     # initial_state = LiquidPuzzle("[[], [0, 1, 1], [2, 0, 1], [0, 2, 2]]")
+    debug = {}
 
     start_time = time.perf_counter()
     path = a_star(initial_state)
@@ -406,8 +452,40 @@ def solve(initial_state):
         print(f"Runtime: {int(minutes)} minutes and {seconds:.5f} seconds")
         print("Number of Moves: {}".format(len(path) - 1))
         print("-" * 30)
+
+        debug_counter = 0
         for step in path:
-            step.special_print()
+            # print(step)
+            # step.special_print()
+            debug[step] = debug_counter
+            debug_counter += 1
+    else:
+        print("No solution found.")
+
+    return path,debug
+
+def solve_debug(initial_state,debug):
+    # debug
+    # initial_state = LiquidPuzzle("[[], [0, 1, 1], [2, 0, 1], [0, 2, 2]]")
+    # debug = {}
+
+    start_time = time.perf_counter()
+    path = debug_a_star(initial_state,debug)
+    end_time = time.perf_counter()
+    if path:
+        runtime = end_time - start_time
+        minutes, seconds = divmod(runtime, 60)
+        print("-" * 30)
+        print(f"Runtime: {int(minutes)} minutes and {seconds:.5f} seconds")
+        print("Number of Moves: {}".format(len(path) - 1))
+        print("-" * 30)
+
+        debug_counter = 0
+        # for step in path:
+            # print(step)
+            # step.special_print()
+            # debug[step] = debug_counter
+            # debug_counter += 1
     else:
         print("No solution found.")
 
@@ -495,8 +573,9 @@ def manuel_solving(puzzle):
 
 
 if __name__ == '__main__':
-    initial_state = LiquidPuzzle("[[], [0, 2, 0, 2], [3, 3, 2, 0], [3, 0, 1, 3], [2, 1, 1, 1]]")
-    solve(initial_state)
+    initial_state = LiquidPuzzle("[[], [], [2, 2, 0, 3, 4], [4, 2, 2, 0, 1], [1, 0, 4, 3, 2], [4, 0, 1, 3, 1], [3, 4, 1, 0, 3]]")
+    result = solve(initial_state)
     # arr = initial_state.get_neighbors()
-    # print("hi")
+    solve_debug(initial_state,result[1])
+    print("hi")
     # menu()
