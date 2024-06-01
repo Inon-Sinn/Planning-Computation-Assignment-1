@@ -161,14 +161,16 @@ class LiquidPuzzle:
                 return False
         return True
 
-    def __eq__(self, other):
-        return self.tubes == other.tubes
-
     def new_eq(self, other):
         for tube in self.tubes:
             if tube not in other.tubes:
                 return False
         return True
+
+    def __eq__(self, other):
+        if isinstance(other, LiquidPuzzle):
+            return self.tubes == other.tubes
+        return False
 
     def __hash__(self):
         return hash(tuple(tuple(tube) for tube in self.tubes))
@@ -205,7 +207,7 @@ class LiquidPuzzle:
 
 # The heuristic function
 def heuristic(puzzle):
-    return heuristic_first(puzzle)
+    return heuristic_fourth(puzzle)
 
 
 def heuristic_first(puzzle):
@@ -313,23 +315,48 @@ def heuristic_fourth(puzzle):
     """
     tubes = puzzle.tubes
     tube_size = puzzle.tube_size
-    color_positions = {}
+    color_goal_positions = {}
+    weights = {'empty_weight': 10, 'consolidate_weight': 5, 'overflow_penalty': 2,
+               'top_bonus': 1, 'bottom_bonus': 1, 'sequence_reward': 3}
 
-    # Find the target positions of each color in the goal state
-    for i, tube in enumerate(tubes):
-        for j, color in enumerate(tube):
-            if color not in color_positions:
-                color_positions[color] = []
-            color_positions[color].append((i, j))
+    # Determine the target positions for each color in the goal state
+    for idx, tube in enumerate(tubes):
+        for pos, color in enumerate(tube):
+            if color not in color_goal_positions:
+                color_goal_positions[color] = []
+            color_goal_positions[color].append((idx, pos))
 
-    total_distance = 0
-    for i, tube in enumerate(tubes):
-        for j, color in enumerate(tube):
-            if color_positions[color]:
-                goal_i, goal_j = color_positions[color].pop(0)  # Get the first target position for this color
-                total_distance += abs(i - goal_i) + abs(j - goal_j)  # Calculate Manhattan distance
+    total_metric = 0
+    for idx, tube in enumerate(tubes):
+        current_streak_color = None
+        streak_length = 0
+        for pos, color in enumerate(tube):
+            if color_goal_positions[color]:
+                goal_idx, goal_pos = color_goal_positions[color].pop(0)  # Get the first target position for this color
+                distance = abs(idx - goal_idx) + abs(pos - goal_pos)  # Calculate a custom distance metric
+                total_metric += distance
 
-    return total_distance
+                # Apply weights
+                if pos == len(tube) - 1:
+                    total_metric -= weights['top_bonus']
+                if pos == 0:
+                    total_metric -= weights['bottom_bonus']
+                if pos > 0 and tube[pos - 1] == color:
+                    total_metric -= weights['consolidate_weight']
+                if idx != goal_idx:
+                    total_metric += len(color_goal_positions[color]) * weights['overflow_penalty']
+
+                if color == current_streak_color:
+                    streak_length += 1
+                else:
+                    current_streak_color = color
+                    streak_length = 1
+                total_metric -= weights['sequence_reward'] * (streak_length - 1)
+
+    empty_tubes_count = sum(1 for tube in tubes if not tube)
+    total_metric -= empty_tubes_count * weights['empty_weight']
+
+    return total_metric
 
 
 
@@ -342,7 +369,6 @@ def a_star(initial_state):
     f_score = {initial_state: heuristic(initial_state)}
     closed_set = set()
 
-
     while not open_set.empty():
         current = open_set.get()[1]
 
@@ -351,17 +377,24 @@ def a_star(initial_state):
 
         closed_set.add(current)
 
-        neighbors = current.get_neighbors()
-        for neighbor in neighbors:
+        for neighbor in current.get_neighbors():
             if neighbor in closed_set:
                 continue
 
             tentative_g_score = g_score[current] + 1
+
             if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = g_score[neighbor] + heuristic(neighbor)
-                open_set.put((f_score[neighbor], neighbor))
+                if neighbor not in g_score:
+                    open_set.put((f_score[neighbor], neighbor))
+                else:
+                    # Update the priority queue
+                    # Remove and reinsert the item to update its priority
+                    # This ensures the priority queue maintains the correct order
+                    open_set.queue = [(score, item) for score, item in open_set.queue if item != neighbor]
+                    open_set.put((f_score[neighbor], neighbor))
 
     return None
 
@@ -425,7 +458,11 @@ def debug_a_star(initial_state,debug):
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = g_score[neighbor] + heuristic(neighbor)
-                open_set.put((f_score[neighbor], neighbor))
+                if neighbor not in g_score:
+                  open_set.put((f_score[neighbor], neighbor))
+                else:
+                    open_set.queue = [(score, item) for score, item in open_set.queue if item != neighbor]
+                    open_set.put((f_score[neighbor], neighbor))
 
         count += 1
     return None
@@ -634,7 +671,7 @@ def manuel_solving(puzzle):
 
 
 if __name__ == '__main__':
-    initial_state = LiquidPuzzle("[[], [], [6, 5, 7, 6, 0, 2, 1, 0], [5, 0, 2, 2, 2, 3, 3, 1], [4, 6, 1, 7, 1, 6, 6, 4], [0, 4, 4, 7, 3, 6, 2, 5], [1, 1, 5, 0, 5, 4, 7, 1], [6, 3, 3, 3, 7, 3, 7, 5], [4, 1, 7, 5, 0, 4, 4, 0], [7, 5, 3, 0, 2, 2, 2, 6]]")
+    initial_state = LiquidPuzzle("[[], [], [], [], [], [4, 4, 6, 1, 9, 5, 3, 3, 8, 7], [2, 9, 8, 7, 3, 2, 1, 4, 0, 0], [7, 8, 8, 7, 8, 4, 8, 4, 2, 5], [3, 8, 6, 0, 6, 3, 5, 2, 6, 9], [2, 2, 3, 3, 3, 6, 9, 5, 7, 0], [0, 5, 0, 4, 0, 7, 9, 1, 7, 1], [2, 7, 1, 2, 6, 4, 5, 6, 4, 8], [6, 7, 8, 2, 9, 1, 9, 0, 4, 3], [0, 2, 9, 7, 1, 8, 6, 5, 9, 5], [0, 5, 5, 6, 3, 4, 1, 1, 1, 9]]")
     result = solve(initial_state)
     # arr = initial_state.get_neighbors()
     solve_debug(initial_state,result[1])
