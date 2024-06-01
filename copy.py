@@ -3,7 +3,6 @@ import ast
 import time
 import random
 
-
 # this function exists to construct a puzzle given a string
 def construct_puzzle(string):
     try:
@@ -308,6 +307,32 @@ def heuristic_third(puzzle):
     return result
 
 
+def heuristic_fourth(puzzle):
+    """
+    Heuristic function for the tube sorting puzzle using Manhattan distance.
+    """
+    tubes = puzzle.tubes
+    tube_size = puzzle.tube_size
+    color_positions = {}
+
+    # Find the target positions of each color in the goal state
+    for i, tube in enumerate(tubes):
+        for j, color in enumerate(tube):
+            if color not in color_positions:
+                color_positions[color] = []
+            color_positions[color].append((i, j))
+
+    total_distance = 0
+    for i, tube in enumerate(tubes):
+        for j, color in enumerate(tube):
+            if color_positions[color]:
+                goal_i, goal_j = color_positions[color].pop(0)  # Get the first target position for this color
+                total_distance += abs(i - goal_i) + abs(j - goal_j)  # Calculate Manhattan distance
+
+    return total_distance
+
+
+
 # A star algorithm
 def a_star(initial_state):
     open_set = PriorityQueue()
@@ -349,19 +374,30 @@ def debug_a_star(initial_state,debug):
     f_score = {initial_state: heuristic(initial_state)}
     closed_set = set()
 
+    saved = initial_state
     count = 0
     while not open_set.empty():
-        # debug = open_set.get()
-        # toPrint = debug[0]
-        # current = debug[1]
         current = open_set.get()[1]
 
-        if count == 2 or count == 3:
+        if count == 4066 or count == 2118 :
             print("-" * 30)
             print(f"Step {count}: score {f_score[current]} - {current}")
             current.special_print()
             print("-"*30)
 
+        if count == 2118:
+            saved = current
+
+        if count >= 2188 and current == saved:
+            print(count)
+
+        if count >= 2189:
+            for item in open_set.queue:
+                if item[1] == saved:
+                    print("shit")
+            # test2  = 0
+            # if any(saved in item for item in open_set.queue):
+            #     print(count)
 
         #debug
         if current in debug:
@@ -369,6 +405,13 @@ def debug_a_star(initial_state,debug):
 
         if current.is_goal():
             return reconstruct_path(came_from, current)
+
+        # if count >= 2118:
+        if count == 4066:
+            print(f"Test 1: {saved in closed_set}")
+            print(f"Test 2: {current in closed_set}")
+            print(f"Test 3")
+            print(saved.__hash__() == current.__hash__())
 
         closed_set.add(current)
 
@@ -591,9 +634,8 @@ def manuel_solving(puzzle):
 
 
 if __name__ == '__main__':
-    initial_state = LiquidPuzzle("[[], [], [2, 2, 0, 0, 7, 3, 1, 1, 9, 0], [3, 3, 9, 7, 2, 8, 4, 0, 3, 6], [3, 5, 8, 5, 7, 0, 2, 9, 0, 0], [5, 0, 6, 4, 9, 2, 3, 7, 3, 9], [6, 4, 4, 9, 3, 1, 3, 3, 4, 4], [5, 7, 6, 7, 1, 8, 7, 2, 1, 7], [6, 8, 8, 4, 2, 6, 4, 5, 8, 1], [9, 9, 1, 7, 5, 0, 5, 1, 9, 1], [2, 5, 8, 1, 2, 4, 6, 7, 4, 6], [5, 0, 6, 8, 8, 5, 6, 8, 9, 2]]")
+    initial_state = LiquidPuzzle("[[], [], [6, 5, 7, 6, 0, 2, 1, 0], [5, 0, 2, 2, 2, 3, 3, 1], [4, 6, 1, 7, 1, 6, 6, 4], [0, 4, 4, 7, 3, 6, 2, 5], [1, 1, 5, 0, 5, 4, 7, 1], [6, 3, 3, 3, 7, 3, 7, 5], [4, 1, 7, 5, 0, 4, 4, 0], [7, 5, 3, 0, 2, 2, 2, 6]]")
     result = solve(initial_state)
     # arr = initial_state.get_neighbors()
     solve_debug(initial_state,result[1])
-    print("hi")
     # menu()
