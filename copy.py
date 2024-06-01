@@ -94,13 +94,22 @@ class LiquidPuzzle:
             count += 1
 
         neighbors = []
+        possible_tubes = []
+        empty_tube = False
         for i in range(len(self.tubes)):
-            for j in range(len(self.tubes)):
+            if not self.tubes[i] and not empty_tube:
+                empty_tube = True
+                possible_tubes.append(i)
+            elif self.tubes[i]:
+                possible_tubes.append(i)
+
+        for i in possible_tubes:
+            for j in possible_tubes:
                 neighbor = self.move(i, j)
                 for k in range(1, top_color[i] + 1):
                     if not neighbor:
                         break
-                    if neighbor and i != j and k == top_color[i]:
+                    if neighbor and i != j and k == top_color[i] and not self.new_eq(neighbor):
                         neighbors.append(neighbor)
                     neighbor = neighbor.move(i, j)
 
@@ -155,6 +164,12 @@ class LiquidPuzzle:
 
     def __eq__(self, other):
         return self.tubes == other.tubes
+
+    def new_eq(self, other):
+        for tube in self.tubes:
+            if tube not in other.tubes:
+                return False
+        return True
 
     def __hash__(self):
         return hash(tuple(tuple(tube) for tube in self.tubes))
@@ -341,9 +356,12 @@ def debug_a_star(initial_state,debug):
         # current = debug[1]
         current = open_set.get()[1]
 
-        if count == 2:
-            print(f"First Step: score {f_score[current]} - {current}")
+        if count == 2 or count == 3:
+            print("-" * 30)
+            print(f"Step {count}: score {f_score[current]} - {current}")
+            current.special_print()
             print("-"*30)
+
 
         #debug
         if current in debug:
@@ -573,7 +591,7 @@ def manuel_solving(puzzle):
 
 
 if __name__ == '__main__':
-    initial_state = LiquidPuzzle("[[], [], [2, 2, 0, 3, 4], [4, 2, 2, 0, 1], [1, 0, 4, 3, 2], [4, 0, 1, 3, 1], [3, 4, 1, 0, 3]]")
+    initial_state = LiquidPuzzle("[[], [], [2, 2, 0, 0, 7, 3, 1, 1, 9, 0], [3, 3, 9, 7, 2, 8, 4, 0, 3, 6], [3, 5, 8, 5, 7, 0, 2, 9, 0, 0], [5, 0, 6, 4, 9, 2, 3, 7, 3, 9], [6, 4, 4, 9, 3, 1, 3, 3, 4, 4], [5, 7, 6, 7, 1, 8, 7, 2, 1, 7], [6, 8, 8, 4, 2, 6, 4, 5, 8, 1], [9, 9, 1, 7, 5, 0, 5, 1, 9, 1], [2, 5, 8, 1, 2, 4, 6, 7, 4, 6], [5, 0, 6, 8, 8, 5, 6, 8, 9, 2]]")
     result = solve(initial_state)
     # arr = initial_state.get_neighbors()
     solve_debug(initial_state,result[1])
