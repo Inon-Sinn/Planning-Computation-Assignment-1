@@ -142,7 +142,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/copy.py</url>
-          <line>396</line>
+          <line>479</line>
           <option name="timeStamp" value="51" />
         </line-breakpoint>
       </breakpoints>
